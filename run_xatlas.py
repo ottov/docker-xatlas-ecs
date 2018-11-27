@@ -21,6 +21,10 @@ def parse_args(argparser = ArgumentParser()):
     file_path_group.add_argument('--results_s3_path', type=str, help='results s3 path', required=True)
     file_path_group.add_argument('--sample_name', type=str, help='sample name', required=True)
 
+    app_args_group = argparser.add_argument_group(title='XATLAS Arguments')
+    app_args_group.add_argument('--threads', type=str, default=1, help='xatlas threads', required=False)
+    app_args_group.add_argument('--regions', type=str, default='', help='xatlas regions file in BED format', required=False)
+
     return argparser
 
 def download_required_files(download_dir, *args):
@@ -55,10 +59,11 @@ def main():
         if not os.path.exists(WORKDIR):
             os.mkdir(WORKDIR)
 
-    ref_path, ref_idx_path, input_path, idx_path = download_required_files(WORKDIR,
+    ref_path, ref_idx_path, input_path, idx_path, region_path = download_required_files(WORKDIR,
                                                args.ref_s3_path, ref_idx,
                                                args.sample_s3_path,
-                                               input_idx
+                                               input_idx,
+                                               args.regions
                                                )
 
     output_dir = WORKDIR + '/results'
@@ -66,7 +71,7 @@ def main():
     output_prefix = output_dir + '/{SAMPLE}.hg38.realign.bqsr'.format(SAMPLE=args.sample_name)
 
     # Run program
-    run_xatlas_basic(args.sample_name, input_path, ref_path, output_prefix, output_dir)
+    run_xatlas_basic(args.sample_name, input_path, ref_path, args.threads, region_path, output_prefix, output_dir)
 
     if not os.getenv('SKIP_UPLOAD'):
       print("Uploading to %s" % (args.results_s3_path) )

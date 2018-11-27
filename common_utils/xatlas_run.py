@@ -22,7 +22,7 @@ def exportSession():
 
         fixResolv()
 
-def run_xatlas_basic(sample_name, input_path, ref_path, output_prefix, log_dir):
+def run_xatlas_basic(sample_name, input_path, ref_path, threads, regions, output_prefix, log_dir):
     """
     Runs xatlas (/usr/bin/xatlas)
     :param sample_name: sample name
@@ -33,10 +33,16 @@ def run_xatlas_basic(sample_name, input_path, ref_path, output_prefix, log_dir):
     print ("Running xatlas")
     exportSession()
 
-    cmd = 'xatlas -g -z -r {REF} -i {INPUT} -s {SAMPLE} -p {OUTPUT} '.format(
+    if regions != '':
+       regions = "--capture-bed %s" % regions
+
+
+    cmd = 'xatlas -g -z -r {REF} -i {INPUT} -s {SAMPLE} --multithread {THREADS} {BEDFILE} -p {OUTPUT} '.format(
                  REF=ref_path,
                  INPUT=input_path,
                  SAMPLE=sample_name,
+                 THREADS=threads,
+                 BEDFILE=regions,
                  OUTPUT=output_prefix)
 
     print('Running cmd:= ', end='')
